@@ -230,7 +230,7 @@ class Map:
 
             # Remove the points that remain in unstable state for a long time
             total_entries = len(self.points)
-            self.remove_outliers(time, weight_thre=10, time_thre=40)
+            self.remove_outliers(time, weight_thre=8, time_thre=40)
             removed_entries = total_entries - len(self.points)
 
             print('updated: {}, added: {}, removed: {}, total: {}'.format(updated_entries, added_entries,
