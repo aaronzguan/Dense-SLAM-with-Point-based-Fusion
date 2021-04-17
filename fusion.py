@@ -141,7 +141,9 @@ class Map:
              T,
              time,
              dist_diff=0.03,
-             angle_diff=np.deg2rad(5)):
+             angle_diff=np.deg2rad(5),
+             weight_thre=8,
+             time_thre=40):
         """
         Given an input point clouds, we project the existing points in global map onto the 2D image map of
         the input point clouds (vertex_map) and find the corresponding points.
@@ -149,6 +151,8 @@ class Map:
         We assume the ground truth transformations from camera to world are known. Actually this transformation
         need to be calculated by ICP
         The unassociated points will be added to the existing Map as well.
+        Points that remain in the unstable state for a long time are likely outliers or artifacts from
+        moving objects and will be removed after t_max time steps.
         :param vertex_map: Input vertex map, (H, W, 3)
         :param normal_map: Input normal map, (H, W, 3)
         :param color_map: Input color map, (H, W, 3)
@@ -156,6 +160,8 @@ class Map:
         :param T: transformation from camera (input) to world (map), (4, 4)
         :param dist_diff: Distance threshold to filter correspondences
         :param angle_diff: Angle threshold of normals to filter correspondences
+        :param weight_thre: Weight threshold to remove unstable points with weights less than the threshold
+        :param time_thre: Time threshold to remove unstable points after a fixed time steps
         :return: None, update map properties on demand
         """
         # Camera to world
@@ -230,7 +236,7 @@ class Map:
 
             # Remove the points that remain in unstable state for a long time
             total_entries = len(self.points)
-            self.remove_outliers(time, weight_thre=8, time_thre=40)
+            self.remove_outliers(time, weight_thre, time_thre)
             removed_entries = total_entries - len(self.points)
 
             print('updated: {}, added: {}, removed: {}, total: {}'.format(updated_entries, added_entries,
